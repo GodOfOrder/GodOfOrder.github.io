@@ -4,11 +4,14 @@
 
 <head><meta name="generator" content="Hexo 3.8.0">
     <meta charset="utf-8">
-    <meta name="keywords" content="破解有道翻译js反爬虫机制, 青丘之貉">
-    <meta name="description" content="
-解读有道翻译网页内部js代码, 构建反爬虫应对措施
+    <meta name="keywords" content="Scrapy的另一种启动方式&amp;启动过程探究, 青丘之貉">
+    <meta name="description" content="Twisted异步
 
-常规爬虫点开有道翻译的链接: http://fanyi.youdao.com/, 然后任意输入需要翻译的内容, 这里以输入:life is short, I choose python">
+由Scrapy的启动方式到Twisted的reactor对象的深入了解
+
+Crawler API在我之前的所有使用scrapy框架构建的爬虫中, 都是使用如下方式启动的:
+
+from scrapy import cmd">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="renderer" content="webkit|ie-stand|ie-comp">
@@ -16,7 +19,7 @@
     <meta name="format-detection" content="telephone=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>破解有道翻译js反爬虫机制 | 青丘之貉</title>
+    <title>Scrapy的另一种启动方式&amp;启动过程探究 | 青丘之貉</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/font-awesome.min.css">
@@ -275,13 +278,13 @@
 
 
 
-<div class="bg-cover post-cover" style="background-image: url('/medias/featureimages/16.jpg')">
+<div class="bg-cover post-cover" style="background-image: url('/medias/featureimages/9.jpg')">
     <div class="container">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
                     <div class="description center-align post-title">
-                        破解有道翻译js反爬虫机制
+                        Scrapy的另一种启动方式&amp;启动过程探究
                     </div>
                 </div>
             </div>
@@ -394,8 +397,8 @@
                     
                     <div class="article-tag">
                         
-                            <a href="/tags/python网络爬虫/" target="_blank">
-                                <span class="chip bg-color">python网络爬虫</span>
+                            <a href="/tags/Scrapy框架/" target="_blank">
+                                <span class="chip bg-color">Scrapy框架</span>
                             </a>
                         
                     </div>
@@ -403,36 +406,27 @@
                 </div>
                 <div class="col s5 right-align">
                     
-                    <div class="post-cate">
-                        <i class="fa fa-bookmark fa-fw icon-category"></i>
-                        
-                            <a href="/categories/实战/" class="post-category" target="_blank">
-                                实战
-                            </a>
-                        
-                    </div>
-                    
                 </div>
             </div>
 
             <div class="post-info">
                 <div class="post-date info-break-policy">
                     <i class="fa fa-calendar-minus-o fa-fw"></i>发布日期:&nbsp;&nbsp;
-                    2019-02-09
+                    2019-02-13
                 </div>
 
                 
                     
                     <div class="info-break-policy">
                         <i class="fa fa-file-word-o fa-fw"></i>文章字数:&nbsp;&nbsp;
-                        1.1k
+                        877
                     </div>
                     
 
                     
                     <div class="info-break-policy">
                         <i class="fa fa-clock-o fa-fw"></i>阅读时长:&nbsp;&nbsp;
-                        4 分
+                        3 分
                     </div>
                     
                 
@@ -448,138 +442,60 @@
         <hr class="clearfix">
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <blockquote>
-<p>解读有道翻译网页内部js代码, 构建反爬虫应对措施</p>
-</blockquote>
-<h2 id="常规爬虫"><a href="#常规爬虫" class="headerlink" title="常规爬虫"></a>常规爬虫</h2><p>点开有道翻译的链接: <a href="http://fanyi.youdao.com/" target="_blank" rel="noopener">http://fanyi.youdao.com/</a>, 然后任意输入需要翻译的内容, 这里以输入:<code>life is short, I choose python</code> 为例. 在界面中 <code>右键-&gt;检查-&gt;打开Network</code> 查看所有的网络请求:</p>
-<p><img src="/2019/02/09/破解有道翻译js反爬虫机制/1.png" alt=""></p>
-<p><img src="/2019/02/09/破解有道翻译js反爬虫机制/2.png" alt="2"></p>
-<p>可以看到这个请求是获取翻译的response结果的. 需要一个POST请求. 然后查看其需要传递的Form data:</p>
-<p><img src="/2019/02/09/破解有道翻译js反爬虫机制/3.png" alt=""></p>
-<p>对比多次请求的Form Data, 发现有几个需要关注的数据:</p>
-<ul>
-<li>i: 需要翻译的字符串</li>
-<li>salt: 值是变化的, 应该是加密用到的”盐”</li>
-<li>sign: 签名字符串, 也是变化的</li>
-<li>ts: 与timestamp时间戳很像,也是不断变化</li>
-</ul>
-<p>其他的数据则保持不变, 那么这里先进行一个初步的尝试:</p>
+                <p>Twisted异步</p>
 <blockquote>
-<pre class=" language-python"><code class="language-python"><span class="token keyword">import</span> requests
+<p>由Scrapy的启动方式到Twisted的reactor对象的深入了解</p>
+</blockquote>
+<h4 id="Crawler-API"><a href="#Crawler-API" class="headerlink" title="Crawler API"></a>Crawler API</h4><p>在我之前的所有使用scrapy框架构建的爬虫中, 都是使用如下方式启动的:</p>
+<blockquote>
+<pre class=" language-python"><code class="language-python"><span class="token keyword">from</span> scrapy <span class="token keyword">import</span> cmdline
 
-trans_word <span class="token operator">=</span> input<span class="token punctuation">(</span><span class="token string">"请输入需要翻译的单词:"</span><span class="token punctuation">)</span>
-url <span class="token operator">=</span> <span class="token string">"http://fanyi.youdao.com/translate_o?smartresult=dict&amp;smartresult=rule"</span>
-headers <span class="token operator">=</span> <span class="token punctuation">{</span>
- <span class="token string">"Cookie"</span><span class="token punctuation">:</span>
- <span class="token string">"OUTFOX_SEARCH_USER_ID=-1548144101@10.168.8.76;JSESSIONID=aaaTLWzfvp5Hfg9mAhFkw;OUTFOX_SEARCH_USER_ID_NCOO=1999296830.4784973;___rl__test__cookies=1523100789517"</span><span class="token punctuation">,</span>
- <span class="token string">"Origin"</span><span class="token punctuation">:</span>
- <span class="token string">"http://fanyi.youdao.com"</span><span class="token punctuation">,</span>
- <span class="token string">"Referer"</span><span class="token punctuation">:</span>
- <span class="token string">"http://fanyi.youdao.com/"</span><span class="token punctuation">,</span>
- <span class="token string">'User-Agent'</span><span class="token punctuation">:</span>
- <span class="token string">'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'</span>
-<span class="token punctuation">}</span>
-
-data_ <span class="token operator">=</span> <span class="token punctuation">{</span>
- <span class="token string">"i"</span><span class="token punctuation">:</span> trans_word<span class="token punctuation">,</span>
- <span class="token string">"from"</span><span class="token punctuation">:</span> <span class="token string">"AUTO"</span><span class="token punctuation">,</span>
- <span class="token string">"to"</span><span class="token punctuation">:</span> <span class="token string">"AUTO"</span><span class="token punctuation">,</span>
- <span class="token string">"smartresult"</span><span class="token punctuation">:</span> <span class="token string">"dict"</span><span class="token punctuation">,</span>
- <span class="token string">"client"</span><span class="token punctuation">:</span> <span class="token string">"fanyideskweb"</span><span class="token punctuation">,</span>
- <span class="token string">"salt"</span><span class="token punctuation">:</span> <span class="token string">"15496907378368"</span><span class="token punctuation">,</span>
- <span class="token string">"sign"</span><span class="token punctuation">:</span> <span class="token string">"f6ebbfde3f572df78882abf344940971"</span><span class="token punctuation">,</span>
- <span class="token string">"ts"</span><span class="token punctuation">:</span> <span class="token string">"1549690737836"</span><span class="token punctuation">,</span>
- <span class="token string">"bv"</span><span class="token punctuation">:</span> <span class="token string">'6f014bd66917f921835d1d6ae8073eb1'</span><span class="token punctuation">,</span>
- <span class="token string">"doctype"</span><span class="token punctuation">:</span> <span class="token string">"json"</span><span class="token punctuation">,</span>
- <span class="token string">"version"</span><span class="token punctuation">:</span> <span class="token string">"2.1"</span><span class="token punctuation">,</span>
- <span class="token string">"keyfrom"</span><span class="token punctuation">:</span> <span class="token string">"fanyi.web"</span><span class="token punctuation">,</span>
- <span class="token string">"action"</span><span class="token punctuation">:</span> <span class="token string">"FY_BY_CLICKBUTTION"</span><span class="token punctuation">,</span>
- <span class="token string">"typoResult"</span><span class="token punctuation">:</span> <span class="token string">"false"</span>
-<span class="token punctuation">}</span>
-
-translate_res <span class="token operator">=</span> requests<span class="token punctuation">.</span>post<span class="token punctuation">(</span>url<span class="token punctuation">,</span> headers<span class="token operator">=</span>headers<span class="token punctuation">,</span> data<span class="token operator">=</span>data_<span class="token punctuation">)</span>
-<span class="token keyword">print</span><span class="token punctuation">(</span>translate_res<span class="token punctuation">.</span>json<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+cmdline<span class="token punctuation">.</span>execute<span class="token punctuation">(</span><span class="token string">"scrapy crawl spider_name"</span><span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
 </code></pre>
 </blockquote>
-<p>运行后的结果如下:</p>
-<pre><code>{&#39;errorCode&#39;: 50}
-</code></pre><p>恩? 得到一个错误代码, 于是我不断尝试发现, 当输入一个单词及其对应的请求数据是可以成功的, 不可能说有道翻译只能翻译一个单词吧. 看来应该是有道的反爬虫机制了.</p>
-<h2 id="破解反爬虫机制"><a href="#破解反爬虫机制" class="headerlink" title="破解反爬虫机制"></a>破解反爬虫机制</h2><p>这里我进行了多次的翻译, 这里拿hi 与 hello 的翻译做比较:</p>
-<p><img src="/2019/02/09/破解有道翻译js反爬虫机制/4.png" alt=""></p>
-<p><img src="/2019/02/09/破解有道翻译js反爬虫机制/5.png" alt="5"></p>
-<p>发现salt、sign、ts这三个数据会随着i的变化而改变, 那么这里分析这些数据的生成方式可能会有两种:</p>
-<ul>
-<li>每次翻译的时候, 有道翻译服务器返回的值</li>
-<li>网页中的JS代码按照一定的规则生成</li>
-</ul>
-<p>如果是第一种情况, 这里我们查看一下当前的其他请求:</p>
-<p><img src="/2019/02/09/破解有道翻译js反爬虫机制/6.png" alt=""></p>
-<p>那么第一种情况就可以排除. 若这串字符是在本地生成的, 那么查看网页的源代码, 查找所有JS文件, 找到了这个fanyi.min.js文件:</p>
-<p><img src="/2019/02/09/破解有道翻译js反爬虫机制/7.png" alt=""></p>
-<p>然后点击Source, 在其中找到这个js文件, 搜索salt:</p>
-<p><img src="/2019/02/09/破解有道翻译js反爬虫机制/8.png" alt=""></p>
-<p>这里简单地梳理一下:</p>
-<ul>
-<li>ts: 当前的时间, 以<code>timestamp</code>时间戳的形式</li>
-<li>bv: 值为<code>navigator.appVersion</code>的<code>md5</code>加密后的值, 这里表示的是使用的浏览器的版本:</li>
-</ul>
-<pre class=" language-javascript"><code class="language-javascript">console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">'appVersion= '</span> <span class="token operator">+</span> navigator<span class="token punctuation">.</span>appVersion<span class="token punctuation">)</span>
+<p>即在.py文件中执行命令行指令, 不过在参考了一些开源的爬虫项目的时候我发现了另外一种方式:</p>
+<blockquote>
+<pre class=" language-python"><code class="language-python"><span class="token keyword">from</span> scrapy<span class="token punctuation">.</span>crawler <span class="token keyword">import</span> CrawlerProcess
+<span class="token keyword">from</span> scrapy<span class="token punctuation">.</span>utils<span class="token punctuation">.</span>project <span class="token keyword">import</span> get_project_settings
+
+<span class="token keyword">if</span> __name__ <span class="token operator">==</span> <span class="token string">"__main__"</span><span class="token punctuation">:</span>
+    process <span class="token operator">=</span> CrawlerProcess<span class="token punctuation">(</span>get_project_settings<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    process<span class="token punctuation">.</span>crawl<span class="token punctuation">(</span><span class="token string">'spider_name'</span><span class="token punctuation">)</span>
+    process<span class="token punctuation">.</span>start<span class="token punctuation">(</span><span class="token punctuation">)</span>
 </code></pre>
-<pre><code>appVersion = 5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36
-</code></pre><ul>
-<li>salt: 值为当前时间戳 + 范围为0~9的整数随机数</li>
-<li>sign: 值为”fanyideskweb” + e + i + “p09@Bn{h02_BIEe]$P^nG”. 其中i为salt的值</li>
+</blockquote>
+<p>我们都知道Scrapy内部有部署5大核心模块, 每个模块分工合作来完成整体数据爬取+分析+存储的工作, 但是并不能看出Scrapy是怎么启动的。上段代码在Pycharm中可以直接运行来开启爬虫, 那么这段代码的逻辑又是什么呢? </p>
+<h4 id="CrawlerProcess"><a href="#CrawlerProcess" class="headerlink" title="CrawlerProcess()"></a>CrawlerProcess()</h4><p>对该类的描述如下:<code>A class to run multiple scrapy crawlers in a process simultaneously.</code>即在单进程中运行多个爬虫. 可以看到该类下还有实现 <code>_signal_shutdown()</code>方法, 用于接收<code>Ctrl+c</code> 信号关闭当前爬虫程序. 同时该类继承自<code>CrawlerRunner</code>.</p>
+<h4 id="CrawlerRunner"><a href="#CrawlerRunner" class="headerlink" title="CrawlerRunner()"></a>CrawlerRunner()</h4><p>描述是: <code>This is a convenient helper class that keeps track of, manages and runs</code><br><code>crawlers inside an already setup Twisted reactor_.</code> 用于跟踪、管理、运行爬虫在reactor中.</p>
+<h4 id="get-project-settings"><a href="#get-project-settings" class="headerlink" title="get_project_settings()"></a>get_project_settings()</h4><p>返回值为Settings(), 描述如下: <code>This object stores Scrapy settings for the configuration of internalcomponents, and can be used for any further customization.</code>就是加载spider的配置</p>
+<h4 id="process-crawl-‘spider-name’"><a href="#process-crawl-‘spider-name’" class="headerlink" title="process.crawl(‘spider_name’)"></a>process.crawl(‘spider_name’)</h4><p>该方法位于<code>CrawlerRunner</code>下, 其描述为:<code>Run a crawler with the provided arguments</code> 即在给定参数条件下执行一个爬虫事件.</p>
+<h4 id="process-start"><a href="#process-start" class="headerlink" title="process.start()"></a>process.start()</h4><p>最后一行的start()方法是这么描述的:<code>This method starts a Twisted reactor_, adjusts its pool size to:setting:REACTOR_THREADPOOL_MAXSIZE, and installs a DNS cache based</code><br><code>on :setting:DNSCACHE_ENABLED and :setting:DNSCACHE_SIZE</code>  对其做的工作总结如下:</p>
+<ul>
+<li>创建了一个Twisted reactor对象</li>
+<li>调整pool即线程池的大小</li>
+<li>安装DNS缓存</li>
+<li>判断是否还有爬虫未结束, 并等待其结束再开启当前爬虫</li>
 </ul>
-<p>那么这个e又是啥呀? 这里我们就添加断点调试这个JS代码一探究竟:</p>
-<p><img src="/2019/02/09/破解有道翻译js反爬虫机制/9.png" alt=""></p>
-<p>发现原来这个 e 就是需要翻译的内容, 那么<code>sign</code>的规律也清楚了, 接下来就是用python来对应其接口. 对于md5算法, python中有专门的库 hashlib, 直接调用即可.</p>
-<pre class=" language-python"><code class="language-python"><span class="token keyword">import</span> requests
-<span class="token keyword">import</span> time
-<span class="token keyword">import</span> random
-<span class="token keyword">import</span> hashlib
-
-trans_word <span class="token operator">=</span> input<span class="token punctuation">(</span><span class="token string">"请输入需要翻译的单词:"</span><span class="token punctuation">)</span>
-url <span class="token operator">=</span> <span class="token string">"http://fanyi.youdao.com/translate_o?smartresult=dict&amp;smartresult=rule"</span>
-headers <span class="token operator">=</span> <span class="token punctuation">{</span>
-    <span class="token string">"Cookie"</span><span class="token punctuation">:</span>
-    <span class="token string">"OUTFOX_SEARCH_USER_ID=-1548144101@10.168.8.76;JSESSIONID=aaaTLWzfvp5Hfg9mAhFkw;OUTFOX_SEARCH_USER_ID_NCOO=1999296830.4784973;___rl__test__cookies=1523100789517"</span><span class="token punctuation">,</span>
-    <span class="token string">"Origin"</span><span class="token punctuation">:</span>
-    <span class="token string">"http://fanyi.youdao.com"</span><span class="token punctuation">,</span>
-    <span class="token string">"Referer"</span><span class="token punctuation">:</span>
-    <span class="token string">"http://fanyi.youdao.com/"</span><span class="token punctuation">,</span>
-    <span class="token string">'User-Agent'</span><span class="token punctuation">:</span>
-    <span class="token string">'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'</span>
-<span class="token punctuation">}</span>
-
-ts <span class="token operator">=</span> str<span class="token punctuation">(</span>int<span class="token punctuation">(</span>time<span class="token punctuation">.</span>time<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">1000</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
-salt <span class="token operator">=</span> int<span class="token punctuation">(</span>time<span class="token punctuation">.</span>time<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">10000</span><span class="token punctuation">)</span> <span class="token operator">+</span> random<span class="token punctuation">.</span>randint<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span>
-
-md5 <span class="token operator">=</span> hashlib<span class="token punctuation">.</span>md5<span class="token punctuation">(</span><span class="token punctuation">)</span>
-md5<span class="token punctuation">.</span>update<span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token string">'fanyideskweb'</span> <span class="token operator">+</span> trans_word <span class="token operator">+</span> str<span class="token punctuation">(</span>salt<span class="token punctuation">)</span> <span class="token operator">+</span>
-            <span class="token string">"ebSeFb%=XZ%T[KZ)c(sy!"</span><span class="token punctuation">)</span><span class="token punctuation">.</span>encode<span class="token punctuation">(</span><span class="token string">'utf-8'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
-sign <span class="token operator">=</span> md5<span class="token punctuation">.</span>hexdigest<span class="token punctuation">(</span><span class="token punctuation">)</span>
-
-data_ <span class="token operator">=</span> <span class="token punctuation">{</span>
-    <span class="token string">"i"</span><span class="token punctuation">:</span> trans_word<span class="token punctuation">,</span>
-    <span class="token string">"from"</span><span class="token punctuation">:</span> <span class="token string">"AUTO"</span><span class="token punctuation">,</span>
-    <span class="token string">"to"</span><span class="token punctuation">:</span> <span class="token string">"AUTO"</span><span class="token punctuation">,</span>
-    <span class="token string">"smartresult"</span><span class="token punctuation">:</span> <span class="token string">"dict"</span><span class="token punctuation">,</span>
-    <span class="token string">"client"</span><span class="token punctuation">:</span> <span class="token string">"fanyideskweb"</span><span class="token punctuation">,</span>
-    <span class="token string">"salt"</span><span class="token punctuation">:</span> salt<span class="token punctuation">,</span>
-    <span class="token string">"sign"</span><span class="token punctuation">:</span> sign<span class="token punctuation">,</span>
-    <span class="token string">"ts"</span><span class="token punctuation">:</span> ts<span class="token punctuation">,</span>
-    <span class="token string">"bv"</span><span class="token punctuation">:</span> <span class="token string">'6f014bd66917f921835d1d6ae8073eb1'</span><span class="token punctuation">,</span>
-    <span class="token string">"doctype"</span><span class="token punctuation">:</span> <span class="token string">"json"</span><span class="token punctuation">,</span>
-    <span class="token string">"version"</span><span class="token punctuation">:</span> <span class="token string">"2.1"</span><span class="token punctuation">,</span>
-    <span class="token string">"keyfrom"</span><span class="token punctuation">:</span> <span class="token string">"fanyi.web"</span><span class="token punctuation">,</span>
-    <span class="token string">"action"</span><span class="token punctuation">:</span> <span class="token string">"FY_BY_CLICKBUTTION"</span><span class="token punctuation">,</span>
-    <span class="token string">"typoResult"</span><span class="token punctuation">:</span> <span class="token string">"false"</span>
-<span class="token punctuation">}</span>
-
-translate_res <span class="token operator">=</span> requests<span class="token punctuation">.</span>post<span class="token punctuation">(</span>url<span class="token punctuation">,</span> headers<span class="token operator">=</span>headers<span class="token punctuation">,</span> data<span class="token operator">=</span>data_<span class="token punctuation">)</span>
-<span class="token keyword">print</span><span class="token punctuation">(</span>translate_res<span class="token punctuation">.</span>json<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
-</code></pre>
-<h2 id="一段小结"><a href="#一段小结" class="headerlink" title="一段小结"></a>一段小结</h2><p>像如上的示例, 通过JS代码在本地生成一定规律的字符串, 也是启发了自己一个新的应对反爬虫机制的思路. 相比较于一些基本的反爬概念(随机请求头、代理IP池、访问频率限制), 这样的方式更像是通过网页本身去挖掘信息并解析. 后续也会去找一些更精彩的反爬虫实例, 在这里记录我的每一步. </p>
+<p>准备工作完成后执行<code>reactor.run(installSignalHandlers=False)</code>. 看到这里就没有了, 还是没有弄清楚是如何启动程序的,那么这个reactor是怎么生成的?</p>
+<p>追溯到代码的描述, 看来需要了解这个Twisted框架是如何生成reactor对象了.</p>
+<h4 id="Twisted-reactor对象"><a href="#Twisted-reactor对象" class="headerlink" title="Twisted reactor对象"></a>Twisted reactor对象</h4><p>根据文档描述, 这个reactor 是Twisted框架中的事件循环. 这个循环使用Twisted驱动应用程序.reactor本身是提供用于网络、线程、分派事件等的API. </p>
+<p>参考: <a href="https://likebeta.gitbooks.io/twisted-intro-cn/content/zh/p02.html" target="_blank" rel="noopener">https://likebeta.gitbooks.io/twisted-intro-cn/content/zh/p02.html</a></p>
+<p>reactor本身是一个模式, 这个模式本身的存在意义就是不断地等待事件的分配然后去处理该事件, 这样看来, 在Scrapy中reactor仅仅是执行即将分配的爬虫任务而已, 准备工作在之前就已经完成.</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>在上述示例中启动一个Scrapy程序的过程中分为以下步骤:</p>
+<ul>
+<li>get_project_settings()读取配置Settings</li>
+<li>CrawlerProcess()类初始化, 并传递Settings信息. 同时初始化shutdown信号处理机制(Ctrl + c)</li>
+<li>生成执行爬虫事件(crawl方法)</li>
+<li>运行CrawlerProcess.start(),分别完成以下任务:<ul>
+<li>创建一个Twisted reactor对象</li>
+<li>调整该对象线程池大小</li>
+<li>创建DNS缓存</li>
+<li>判断是否还有爬虫未结束, 并等待其结束</li>
+<li>运行reactor.run(), 将之前加载完成的spider放在reactor模式运行</li>
+</ul>
+</li>
+</ul>
+<p>上面步骤完成后, Scrapy就会为每个URL创建<code>scrapy.Request</code>对象，并将默认的<code>parse()</code>方法作为<code>scrapy.Request</code>对象的<code>callback</code>回调函数。</p>
 
             </div>
             <hr>
@@ -603,7 +519,7 @@ translate_res <span class="token operator">=</span> requests<span class="token p
                     </span>
                     <a href="https://godoforder.github.io" class="b-link-green">青丘之貉</a>
                     <i class="fa fa-angle-right fa-lg fa-fw text-color"></i>
-                    <a href="/2019/02/09/破解有道翻译js反爬虫机制/" class="b-link-green">破解有道翻译js反爬虫机制</a>
+                    <a href="/2019/02/13/Scrapy的另一种启动方式-启动过程探究/" class="b-link-green">Scrapy的另一种启动方式&amp;启动过程探究</a>
                 </p>
             </div>
         </div>
@@ -625,7 +541,7 @@ translate_res <span class="token operator">=</span> requests<span class="token p
         repo: '',
         owner: '',
         admin: null,
-        id: '2019-02-09T19-22-18',
+        id: '2019-02-13T20-55-10',
         distractionFreeMode: false  // Facebook-like distraction free mode
     });
 
@@ -648,7 +564,8 @@ translate_res <span class="token operator">=</span> requests<span class="token p
         
         <div class="article col s12 m6" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fa fa-chevron-left"></i>&nbsp;上一篇</div>
+                <i class="fa fa-dot-circle-o"></i>&nbsp;本篇
+            </div>
             <div class="card">
                 <a href="/2019/02/13/Scrapy的另一种启动方式-启动过程探究/">
                     <div class="card-image">
@@ -668,9 +585,9 @@ Crawler API在我之前的所有使用scrapy框架构建的爬虫中, 都是使�
 
 from scrapy import cmd</div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="fa fa-clock-o fa-fw icon-date"></i>2019-02-13
-                        </span>
+                            <span class="publish-date">
+                                <i class="fa fa-clock-o fa-fw icon-date"></i>2019-02-13
+                            </span>
                         <span class="publish-author">
                             
                             <i class="fa fa-user fa-fw"></i>
@@ -679,6 +596,7 @@ from scrapy import cmd</div>
                         </span>
                     </div>
                 </div>
+
                 
                 <div class="card-action article-tags">
                     
@@ -697,28 +615,43 @@ from scrapy import cmd</div>
                 下一篇&nbsp;<i class="fa fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2019/02/05/hello-world/">
+                <a href="/2019/02/09/破解有道翻译js反爬虫机制/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/12.jpg" class="responsive-img" alt="Hello World">
+                        <img src="/medias/featureimages/16.jpg" class="responsive-img" alt="破解有道翻译js反爬虫机制">
                         
-                        <span class="card-title">Hello World</span>
+                        <span class="card-title">破解有道翻译js反爬虫机制</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
-                    <div class="summary">Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hex</div>
+                    <div class="summary">
+解读有道翻译网页内部js代码, 构建反爬虫应对措施
+
+常规爬虫点开有道翻译的链接: http://fanyi.youdao.com/, 然后任意输入需要翻译的内容, 这里以输入:life is short, I choose python</div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="fa fa-clock-o fa-fw icon-date"></i>2019-02-05
+                                <i class="fa fa-clock-o fa-fw icon-date"></i>2019-02-09
                             </span>
                         <span class="publish-author">
                             
-                            <i class="fa fa-user fa-fw"></i>
+                            <i class="fa fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/实战/" class="post-category" target="_blank">
+                                    实战
+                                </a>
                             
                             
                         </span>
                     </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/python网络爬虫/" target="_blank">
+                        <span class="chip bg-color">python网络爬虫</span>
+                    </a>
+                    
                 </div>
                 
             </div>
