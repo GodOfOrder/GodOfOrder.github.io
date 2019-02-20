@@ -1,0 +1,930 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN">
+
+
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta name="keywords" content="Scrapy+Selenium爬取简书网, 青丘之貉">
+    <meta name="description" content="
+为什么要选取简书网, 因为在爬取该网站数据的时候我发现有些数据是异步加载的, 而且不仅仅是文章的推送, 在文章内部的阅读量、评论数等信息也不是同步加载的,这就类似于很多网页使用的Ajax技术. 鉴于有比较多的数据为异步加载, 所以这里使用">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Scrapy+Selenium爬取简书网 | 青丘之貉</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/css/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+
+    <script src="/libs/jquery/jquery-2.2.0.min.js"></script>
+<link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head>
+
+
+<body>
+
+<header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="container">
+            <div class="nav-wrapper">
+                <div class="brand-logo">
+                    <a href="/" class="waves-effect waves-light">
+                        
+                        <img src="/medias/logo.png" class="logo-img hide-on-small-only">
+                        
+                        <span class="logo-span">青丘之貉</span>
+                    </a>
+                </div>
+                
+
+<a href="#" data-activates="mobile-nav" class="button-collapse"><i class="fa fa-navicon"></i></a>
+<ul class="right">
+    
+    <li class="hide-on-med-and-down">
+        <a href="/" class="waves-effect waves-light">
+            
+            <i class="fa fa-home"></i>
+            
+            <span>首页</span>
+        </a>
+    </li>
+    
+    <li class="hide-on-med-and-down">
+        <a href="/tags" class="waves-effect waves-light">
+            
+            <i class="fa fa-tags"></i>
+            
+            <span>标签</span>
+        </a>
+    </li>
+    
+    <li class="hide-on-med-and-down">
+        <a href="/categories" class="waves-effect waves-light">
+            
+            <i class="fa fa-bookmark"></i>
+            
+            <span>分类</span>
+        </a>
+    </li>
+    
+    <li class="hide-on-med-and-down">
+        <a href="/archives" class="waves-effect waves-light">
+            
+            <i class="fa fa-archive"></i>
+            
+            <span>归档</span>
+        </a>
+    </li>
+    
+    <li class="hide-on-med-and-down">
+        <a href="/about" class="waves-effect waves-light">
+            
+            <i class="fa fa-user-circle-o"></i>
+            
+            <span>关于</span>
+        </a>
+    </li>
+    
+    <li class="hide-on-med-and-down">
+        <a href="/friends" class="waves-effect waves-light">
+            
+            <i class="fa fa-address-book"></i>
+            
+            <span>友情链接</span>
+        </a>
+    </li>
+    
+    <li>
+        <a id="toggleSearch" class="waves-effect waves-light">
+            <i id="searchIcon" class="mdi-action-search" title="搜索"></i>
+        </a>
+    </li>
+
+</ul>
+
+<div class="side-nav" id="mobile-nav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">青丘之貉</div>
+        <div class="logo-desc">
+            
+            博观而约取，厚积而薄发
+            
+        </div>
+    </div>
+
+    
+
+    <ul class="menu-list mobile-menu-list">
+        
+        <li>
+            <a href="/" class="waves-effect waves-light">
+                
+                <i class="fa fa-fw fa-home"></i>
+                
+                首页
+            </a>
+        </li>
+        
+        <li>
+            <a href="/tags" class="waves-effect waves-light">
+                
+                <i class="fa fa-fw fa-tags"></i>
+                
+                标签
+            </a>
+        </li>
+        
+        <li>
+            <a href="/categories" class="waves-effect waves-light">
+                
+                <i class="fa fa-fw fa-bookmark"></i>
+                
+                分类
+            </a>
+        </li>
+        
+        <li>
+            <a href="/archives" class="waves-effect waves-light">
+                
+                <i class="fa fa-fw fa-archive"></i>
+                
+                归档
+            </a>
+        </li>
+        
+        <li>
+            <a href="/about" class="waves-effect waves-light">
+                
+                <i class="fa fa-fw fa-user-circle-o"></i>
+                
+                关于
+            </a>
+        </li>
+        
+        <li>
+            <a href="/friends" class="waves-effect waves-light">
+                
+                <i class="fa fa-fw fa-address-book"></i>
+                
+                友情链接
+            </a>
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/GodOfOrder/GodOfOrder.github.io" class="waves-effect waves-light" target="_blank">
+                <i class="fa fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+
+    <div class="social-link">
+
+
+    <a href="mailto:yws13574554@163.com" class="tooltipped" target="_blank" data-tooltip="邮件联系我" data-position="top" data-delay="50">
+        <i class="fa fa-envelope-open"></i>
+    </a>
+
+
+
+    <a href="tencent://AddContact/?fromId=50&fromSubId=1&subcmd=all&uin=251550241" class="tooltipped" data-tooltip="QQ联系我: 251550241" data-position="top" data-delay="50">
+        <i class="fa fa-qq"></i>
+    </a>
+
+
+</div>
+</div>
+
+            </div>
+        </div>
+
+        
+        <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/GodOfOrder/GodOfOrder.github.io" class="github-corner tooltipped hide-on-med-and-down" target="_blank" data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewbox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"/>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"/>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"/>
+    </svg>
+</a>
+        
+    </nav>
+</header>
+
+
+
+
+
+<div class="bg-cover post-cover" style="background-image: url('/medias/featureimages/0.jpg')">
+    <div class="container">
+        <div class="row">
+            <div class="col s12 m12 l12">
+                <div class="brand">
+                    <div class="description center-align post-title">
+                        Scrapy+Selenium爬取简书网
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<main class="post-container content">
+
+    
+    <link rel="stylesheet" href="/libs/tocbot/tocbot.css">
+<style>
+    #articleContent h1,
+    #articleContent h2,
+    #articleContent h3,
+    #articleContent h4,
+    #articleContent h5,
+    #articleContent h6 {
+        padding-top: 76px;
+        margin-top: -76px;
+    }
+
+    #articleContent h1 {
+        line-height: 3.5rem;
+    }
+
+    #articleContent h2 {
+        line-height: 3.2rem;
+    }
+
+    #articleContent h3 {
+        line-height: 2.8rem;
+    }
+
+    #articleContent h4 {
+        line-height: 2.5rem;
+    }
+
+    #articleContent h5 {
+        line-height: 2.2rem;
+    }
+
+    #articleContent h6 {
+        line-height: 1.9rem;
+    }
+
+    #articleContent :focus {
+        outline: none;
+    }
+
+    .toc-fixed {
+        position: fixed;
+        top: 64px;
+    }
+
+    .toc-widget {
+        padding-left: 20px;
+    }
+
+    .toc-widget .toc-title {
+        margin: 35px 0 15px 0;
+        padding-left: 17px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        line-height: 1.5rem;
+    }
+
+    .toc-widget ol {
+        padding: 0;
+        list-style: none;
+    }
+
+    #toc-content ol {
+        padding-left: 10px;
+    }
+
+    #toc-content ol li {
+        padding-left: 10px;
+    }
+
+    #toc-content .toc-link:hover {
+        color: #42b983;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    #toc-content .toc-link::before {
+        background-color: transparent;
+        max-height: 25px;
+    }
+
+    #toc-content .is-active-link {
+        color: #42b983;
+    }
+
+    #toc-content .is-active-link::before {
+        background-color: #42b983;
+    }
+</style>
+<div class="row">
+    <div class="col s12 m12 l9">
+        <!-- 文章内容详情 -->
+<div id="artDetail">
+    <div class="card">
+        <div class="card-content article-info">
+            <div class="row tag-cate">
+                <div class="col s7">
+                    
+                    <div class="article-tag">
+                        
+                            <a href="/tags/Scrapy框架/" target="_blank">
+                                <span class="chip bg-color">Scrapy框架</span>
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+                <div class="col s5 right-align">
+                    
+                    <div class="post-cate">
+                        <i class="fa fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/实战/" class="post-category" target="_blank">
+                                实战
+                            </a>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="post-info">
+                <div class="post-date info-break-policy">
+                    <i class="fa fa-calendar-minus-o fa-fw"></i>发布日期:&nbsp;&nbsp;
+                    2019-02-19
+                </div>
+
+                
+                    
+                    <div class="info-break-policy">
+                        <i class="fa fa-file-word-o fa-fw"></i>文章字数:&nbsp;&nbsp;
+                        2.4k
+                    </div>
+                    
+
+                    
+                    <div class="info-break-policy">
+                        <i class="fa fa-clock-o fa-fw"></i>阅读时长:&nbsp;&nbsp;
+                        9 分
+                    </div>
+                    
+                
+				
+				
+                    <div id="busuanzi_container_page_pv" class="info-break-policy">
+                        <i class="fa fa-eye fa-fw"></i>阅读次数:&nbsp;&nbsp;
+                        <span id="busuanzi_value_page_pv"></span>
+                    </div>
+				
+            </div>
+        </div>
+        <hr class="clearfix">
+        <div class="card-content article-card-content">
+            <div id="articleContent">
+                <blockquote>
+<p>为什么要选取简书网, 因为在爬取该网站数据的时候我发现有些数据是异步加载的, 而且不仅仅是文章的推送, 在文章内部的阅读量、评论数等信息也不是同步加载的,这就类似于很多网页使用的Ajax技术. 鉴于有比较多的数据为异步加载, 所以这里使用Scrapy+selenium实现爬取Ajax数据.</p>
+</blockquote>
+<h4 id="网页分析"><a href="#网页分析" class="headerlink" title="网页分析"></a>网页分析</h4><p>这里使用Chrome浏览器的<code>Toggle JavaScript</code>扩展程序查看网站是否为异步加载, 首先我们disable JavaScript, 网页只会加载7篇文章:</p>
+<p><img src="/2019/02/19/Scrapy-Selenium爬取简书网/1.png" alt=""></p>
+<p>再次启用, 将网页下拉会额外加载7篇:</p>
+<p><img src="/2019/02/19/Scrapy-Selenium爬取简书网/2.png" alt=""></p>
+<p>这么看简书网首页的文章是通过Ajax技术异步加载的. 将首页一直下拉到底, 会加载出来一个”阅读更多”, 点击后会继续加载7篇文章, 那么首先确定思路: 先分析下拉首页自动加载的文章, 再分析点击”阅读更多”额外加载的文章.</p>
+<h4 id="下拉首页异步加载的Ajax"><a href="#下拉首页异步加载的Ajax" class="headerlink" title="下拉首页异步加载的Ajax"></a>下拉首页异步加载的Ajax</h4><p>先将网页下拉到最底:</p>
+<p><img src="/2019/02/19/Scrapy-Selenium爬取简书网/3.png" alt=""></p>
+<p>发现会多出两条以seen_snote 开头的请求, 这是一个GET请求, url结构很明显, 在首页url的后面添加？ 以及一堆字符串, 这些字符串固定是由seen_snote_ids[] + 一串数字组成, 这些数字结构看起来很眼熟啊, 随意复制第一个到网页Element中查看:</p>
+<p><img src="/2019/02/19/Scrapy-Selenium爬取简书网/4.png" alt=""></p>
+<p>果然就是文章的编号, 而且正好是前面7篇文章的编号, 那么问题就简单了: 获取已加载的文章的编号再组成新的url请求隐藏的文章,首先做一个测试:</p>
+<pre class=" language-python"><code class="language-python"><span class="token keyword">import</span> requests
+<span class="token keyword">from</span> urllib<span class="token punctuation">.</span>parse <span class="token keyword">import</span> quote
+<span class="token keyword">from</span> lxml <span class="token keyword">import</span> etree
+
+url <span class="token operator">=</span> <span class="token string">"https://www.jianshu.com/"</span>
+headers <span class="token operator">=</span> <span class="token punctuation">{</span>
+    <span class="token string">'user-agent'</span><span class="token punctuation">:</span>
+    <span class="token string">'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'</span>
+<span class="token punctuation">}</span>
+meta <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+res <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>url<span class="token punctuation">,</span> headers<span class="token operator">=</span>headers<span class="token punctuation">)</span>
+source <span class="token operator">=</span> res<span class="token punctuation">.</span>content<span class="token punctuation">.</span>decode<span class="token punctuation">(</span><span class="token string">'utf-8'</span><span class="token punctuation">)</span>
+htmlElement <span class="token operator">=</span> etree<span class="token punctuation">.</span>HTML<span class="token punctuation">(</span>source<span class="token punctuation">)</span>
+note_id <span class="token operator">=</span> htmlElement<span class="token punctuation">.</span>xpath<span class="token punctuation">(</span><span class="token string">"//li[contains(@id,'note-')]/@data-note-id"</span><span class="token punctuation">)</span>
+<span class="token comment" spellcheck="true">#获取首页上已加载出来的文章的id, 爬取前三个做比较</span>
+titles <span class="token operator">=</span> htmlElement<span class="token punctuation">.</span>xpath<span class="token punctuation">(</span><span class="token string">"//a[@class='title']/text()"</span><span class="token punctuation">)</span>
+<span class="token comment" spellcheck="true">#获取文章标题</span>
+url <span class="token operator">+=</span> <span class="token string">"?"</span>
+<span class="token keyword">for</span> id<span class="token punctuation">,</span>title <span class="token keyword">in</span> zip<span class="token punctuation">(</span>note_id<span class="token punctuation">,</span>titles<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    meta<span class="token punctuation">.</span>append<span class="token punctuation">(</span>quote<span class="token punctuation">(</span><span class="token string">'seen_snote_ids[]'</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">'='</span> <span class="token operator">+</span> id<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"id=%s title=%s"</span><span class="token operator">%</span><span class="token punctuation">(</span>id<span class="token punctuation">,</span>title<span class="token punctuation">)</span><span class="token punctuation">)</span>
+meta<span class="token punctuation">.</span>append<span class="token punctuation">(</span><span class="token string">'page=%s'</span><span class="token operator">%</span>str<span class="token punctuation">(</span>len<span class="token punctuation">(</span>meta<span class="token punctuation">)</span><span class="token operator">//</span><span class="token number">7</span> <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"="</span><span class="token operator">*</span><span class="token number">30</span><span class="token punctuation">)</span>
+url <span class="token operator">=</span> url <span class="token operator">+</span> <span class="token string">'&amp;'</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>meta<span class="token punctuation">)</span>
+Ajax_res <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>url<span class="token punctuation">,</span>headers<span class="token operator">=</span>headers<span class="token punctuation">)</span>
+Ajax_htmlElement <span class="token operator">=</span> etree<span class="token punctuation">.</span>HTML<span class="token punctuation">(</span>Ajax_res<span class="token punctuation">.</span>content<span class="token punctuation">.</span>decode<span class="token punctuation">(</span><span class="token string">'utf-8'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+note_id_ <span class="token operator">=</span> Ajax_htmlElement<span class="token punctuation">.</span>xpath<span class="token punctuation">(</span><span class="token string">"//li[contains(@id,'note-')]/@data-note-id"</span><span class="token punctuation">)</span>  <span class="token comment" spellcheck="true">#获取额外加载的文章id</span>
+titles_ <span class="token operator">=</span> Ajax_htmlElement<span class="token punctuation">.</span>xpath<span class="token punctuation">(</span><span class="token string">"//a[@class='title']/text()"</span><span class="token punctuation">)</span>
+<span class="token keyword">for</span> id<span class="token punctuation">,</span>title <span class="token keyword">in</span> zip<span class="token punctuation">(</span>note_id_<span class="token punctuation">,</span>titles_<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"id=%s title=%s"</span><span class="token operator">%</span><span class="token punctuation">(</span>id<span class="token punctuation">,</span>title<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>输出的结果如下(截取三篇做测试):</p>
+<blockquote>
+<pre><code>id=39374653 title=黄帝内经条文经常被滥用，看这句就被养生的玩坏
+id=39625784 title=这些天，我做过的文章兼职
+id=37606409 title=《沙漠骆驼》抄袭死人作品，要脸吗？
+==============================
+id=39374653 title=黄帝内经条文经常被滥用，看这句就被养生的玩坏
+id=39625784 title=这些天，我做过的文章兼职
+id=37606409 title=《沙漠骆驼》抄袭死人作品，要脸吗？
+</code></pre></blockquote>
+<p>哎？怎么获取到的是同样的文章?然后对比了一下url, 也没错呀? 看起来问题并没有这么简单,于是我再次仔细地查看了这个Ajax请求:</p>
+<p><img src="/2019/02/19/Scrapy-Selenium爬取简书网/5.png" alt=""></p>
+<p>发现这里的请求头里面有几个’x’开头的字段, 在多次尝试后发现, 这三个值都是不变的, 第二与第三个参数的值应该就是常量, 第一个参数是一长串的字符, 参考之前我的文章, 我判定获取方式应该有两种:<1> 从简书网服务器上获取 <2> 本地网页中获取.  第一种情况可以排除, 因为没有请求的Response结果是返回这个值的, 那么只有第二种情况, 于是我在网页中检索:</2></1></p>
+<p><img src="/2019/02/19/Scrapy-Selenium爬取简书网/6.png" alt=""></p>
+<p>果然是在本地,保险起见, 我将JavaScript disable , 发现这个值依然存在, 好的,那么修改后的代码如下:</p>
+<pre class=" language-python"><code class="language-python"><span class="token keyword">import</span> requests
+<span class="token keyword">from</span> urllib<span class="token punctuation">.</span>parse <span class="token keyword">import</span> quote
+<span class="token keyword">from</span> lxml <span class="token keyword">import</span> etree
+
+url <span class="token operator">=</span> <span class="token string">"https://www.jianshu.com/"</span>
+headers <span class="token operator">=</span> <span class="token punctuation">{</span>
+    <span class="token string">'user-agent'</span><span class="token punctuation">:</span>
+    <span class="token string">'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'</span><span class="token punctuation">,</span>
+<span class="token punctuation">}</span>
+meta <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+res <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>url<span class="token punctuation">,</span> headers<span class="token operator">=</span>headers<span class="token punctuation">)</span>
+source <span class="token operator">=</span> res<span class="token punctuation">.</span>content<span class="token punctuation">.</span>decode<span class="token punctuation">(</span><span class="token string">'utf-8'</span><span class="token punctuation">)</span>
+htmlElement <span class="token operator">=</span> etree<span class="token punctuation">.</span>HTML<span class="token punctuation">(</span>source<span class="token punctuation">)</span>
+x_csrf_token_value <span class="token operator">=</span> htmlElement<span class="token punctuation">.</span>xpath<span class="token punctuation">(</span><span class="token string">"//meta[@name='csrf-token']/@content"</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+note_id <span class="token operator">=</span> htmlElement<span class="token punctuation">.</span>xpath<span class="token punctuation">(</span><span class="token string">"//li[contains(@id,'note-')]/@data-note-id"</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token number">3</span><span class="token punctuation">]</span>  <span class="token comment" spellcheck="true">#获取首页上已加载出来的文章的id</span>
+titles <span class="token operator">=</span> htmlElement<span class="token punctuation">.</span>xpath<span class="token punctuation">(</span><span class="token string">"//a[@class='title']/text()"</span><span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token punctuation">:</span><span class="token number">3</span><span class="token punctuation">]</span>
+url <span class="token operator">+=</span> <span class="token string">"?"</span>
+<span class="token keyword">for</span> id<span class="token punctuation">,</span>title <span class="token keyword">in</span> zip<span class="token punctuation">(</span>note_id<span class="token punctuation">,</span>titles<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    meta<span class="token punctuation">.</span>append<span class="token punctuation">(</span>quote<span class="token punctuation">(</span><span class="token string">'seen_snote_ids[]'</span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string">'='</span> <span class="token operator">+</span> id<span class="token punctuation">)</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"id=%s title=%s"</span><span class="token operator">%</span><span class="token punctuation">(</span>id<span class="token punctuation">,</span>title<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"="</span><span class="token operator">*</span><span class="token number">30</span><span class="token punctuation">)</span>
+headers<span class="token punctuation">[</span><span class="token string">'x-infinitescroll'</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">'true'</span>
+headers<span class="token punctuation">[</span><span class="token string">'x-requested-with'</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token string">'XMLHttpRequest'</span>
+headers<span class="token punctuation">[</span><span class="token string">'x-csrf-token'</span><span class="token punctuation">]</span> <span class="token operator">=</span> x_csrf_token_value
+url <span class="token operator">=</span> url <span class="token operator">+</span> <span class="token string">'&amp;'</span><span class="token punctuation">.</span>join<span class="token punctuation">(</span>meta<span class="token punctuation">)</span>
+Ajax_res <span class="token operator">=</span> requests<span class="token punctuation">.</span>get<span class="token punctuation">(</span>url<span class="token punctuation">,</span>headers<span class="token operator">=</span>headers<span class="token punctuation">)</span>
+Ajax_htmlElement <span class="token operator">=</span> etree<span class="token punctuation">.</span>HTML<span class="token punctuation">(</span>Ajax_res<span class="token punctuation">.</span>content<span class="token punctuation">.</span>decode<span class="token punctuation">(</span><span class="token string">'utf-8'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+note_id_ <span class="token operator">=</span> Ajax_htmlElement<span class="token punctuation">.</span>xpath<span class="token punctuation">(</span><span class="token string">"//li[contains(@id,'note-')]/@data-note-id"</span><span class="token punctuation">)</span>  <span class="token comment" spellcheck="true">#获取额外加载的文章id</span>
+titles <span class="token operator">=</span> Ajax_htmlElement<span class="token punctuation">.</span>xpath<span class="token punctuation">(</span><span class="token string">"//a[@class='title']/text()"</span><span class="token punctuation">)</span>
+<span class="token keyword">for</span> id<span class="token punctuation">,</span>title <span class="token keyword">in</span> zip<span class="token punctuation">(</span>note_id<span class="token punctuation">,</span>titles<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"id=%s title=%s"</span><span class="token operator">%</span><span class="token punctuation">(</span>id<span class="token punctuation">,</span>title<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<p>输出结果如下(截取前三篇):</p>
+<blockquote>
+<pre><code>id=37871082 title=值得一试的冬日早餐，比被窝更值得眷恋
+id=38463114 title=我都可以出几本书了
+id=40700417 title=过年肉吃腻了就多吃这道菜，清爽可口又营养，一端上桌就抢着吃!
+==============================
+id=41206930 title=这年头谁还没演过好人呀？《知否》反派代表团，一人一部好剧推荐
+id=38218039 title=不主动找你，不是因为我不想你
+id=37242620 title=有趣的男女不同
+</code></pre></blockquote>
+<p>嗯, id与标题都完全不同,看来这个问题是解决了. 按照相同的分析方法我们也可以获取通过点击’阅读更多’加载的推荐文章.</p>
+<h4 id="Selenium提取文章内部Ajax信息"><a href="#Selenium提取文章内部Ajax信息" class="headerlink" title="Selenium提取文章内部Ajax信息"></a>Selenium提取文章内部Ajax信息</h4><p>任意点开一篇文章, 首先禁用JavaScript, 然后再启用, 发现有几个位置是异步加载的: 文章的阅读量、评论数、喜欢数、赞赏数、收录专题. 好像有点多, 而且加载的位置各异, 这样如果逐条分析就需要大量的请求, 所以这里就采用Selenium直接抓取网页渲染后的结果. 那么网页的分析就完成了,接下来就是在Scrapy内部分布代码了.</p>
+<h4 id="Scrapy框架Spiders部分"><a href="#Scrapy框架Spiders部分" class="headerlink" title="Scrapy框架Spiders部分"></a>Scrapy框架Spiders部分</h4><p>打开命令行执行命令创建项目:</p>
+<blockquote>
+<p>scrapy startproject jianshu_web</p>
+</blockquote>
+<p>然后进入该项目所在路径创建爬虫:</p>
+<blockquote>
+<p>scrapy genspider js “jianshu.com”</p>
+</blockquote>
+<p>完成后找到项目中生成的js.py文件, 我们的思路是首先要获取首页的前7篇文章并获取其编号, 才能后续爬取异步加载的数据,我们知道在Spiders模块中第一条请求是在内置的<code>start_requests()</code>方法中发送的,所以这里重写该方法并为Request请求添加一个回调函数parse_Ajax(),示例如下:</p>
+<pre class=" language-python"><code class="language-python">start_urls <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token string">'https://www.jianshu.com/'</span><span class="token punctuation">]</span>
+<span class="token keyword">def</span> <span class="token function">start_requests</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">for</span> url <span class="token keyword">in</span> self<span class="token punctuation">.</span>start_urls<span class="token punctuation">:</span>
+        <span class="token keyword">yield</span> scrapy<span class="token punctuation">.</span>Request<span class="token punctuation">(</span>url<span class="token punctuation">,</span>dont_filter<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span>callback<span class="token operator">=</span>self<span class="token punctuation">.</span>parse_Ajax<span class="token punctuation">,</span>
+                             meta<span class="token operator">=</span><span class="token punctuation">{</span><span class="token string">"Function"</span><span class="token punctuation">:</span><span class="token string">"Ajax"</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+<span class="token comment" spellcheck="true">#这里解析Ajax网页需要的参数</span>
+<span class="token keyword">def</span> <span class="token function">parse_Ajax</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> response<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment" spellcheck="true">#...</span>
+</code></pre>
+<p>这里我额外地传递了一个meta,后面有用处. 设置<code>dont_filter=True</code> 是告诉调度器不过滤该请求.</p>
+<p>在parse_Ajax() 方法中截取到文章的id并组成新的url, 再保存异步加载出来的文章url, 通过额外的Request请求爬取文章细节信息.</p>
+<h4 id="构建自己的Selenium下载器中间件"><a href="#构建自己的Selenium下载器中间件" class="headerlink" title="构建自己的Selenium下载器中间件"></a>构建自己的Selenium下载器中间件</h4><p>我们都知道Selenium是让机器来模仿人对浏览器进行操作. 那么对于单篇文章内部细节的爬取, 我们就不需要将Request请求发送到<code>DOWNLOADER</code>模块使其从网页上下载数据了. 也就是说, 我们需要在我们自定义的<code>MiddleWare</code>中截取这个爬取文章内容的Request请求, 再将渲染完成的网页源码包装为<code>Response对象</code>返回给Spiders.</p>
+<p>这里查阅<a href="https://docs.scrapy.org/en/latest/topics/downloader-middleware.html" target="_blank" rel="noopener">Scrapy官方文档</a>是这么说明的:</p>
+<blockquote>
+<p><em>class</em><code>scrapy.downloadermiddlewares.`</code>DownloaderMiddleware`</p>
+<ul>
+<li><p><code>process_request</code>(<em>request</em>, <em>spider</em>)</p>
+<p>This method is called for each request that goes through the download middleware.<a href="https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#scrapy.downloadermiddlewares.DownloaderMiddleware.process_request" target="_blank" rel="noopener"><code>process_request()</code></a> should either: return <code>None</code>, return a <a href="https://docs.scrapy.org/en/latest/topics/request-response.html#scrapy.http.Response" target="_blank" rel="noopener"><code>Response</code></a> object, return a <a href="https://docs.scrapy.org/en/latest/topics/request-response.html#scrapy.http.Request" target="_blank" rel="noopener"><code>Request</code></a>object, or raise <a href="https://docs.scrapy.org/en/latest/topics/exceptions.html#scrapy.exceptions.IgnoreRequest" target="_blank" rel="noopener"><code>IgnoreRequest</code></a>.</p>
+<p>If it returns a <a href="https://docs.scrapy.org/en/latest/topics/request-response.html#scrapy.http.Response" target="_blank" rel="noopener"><code>Response</code></a> object, Scrapy won’t bother calling <em>any</em> other <a href="https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#scrapy.downloadermiddlewares.DownloaderMiddleware.process_request" target="_blank" rel="noopener"><code>process_request()</code></a> or <a href="https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#scrapy.downloadermiddlewares.DownloaderMiddleware.process_exception" target="_blank" rel="noopener"><code>process_exception()</code></a> methods, or the appropriate download function; it’ll return that response. </p>
+</li>
+</ul>
+</blockquote>
+<p>当我们重写了这个process_request()方法, 如果返回值是一个Response对象,Scrapy就不会再调用其他的方法, 而是直接返回这个Response对象. 所以这里思路就很清晰了, 大致代码如下:</p>
+<pre class=" language-python"><code class="language-python"><span class="token keyword">from</span> selenium <span class="token keyword">import</span> webdriver
+<span class="token keyword">from</span> scrapy<span class="token punctuation">.</span>http<span class="token punctuation">.</span>response<span class="token punctuation">.</span>html <span class="token keyword">import</span> HtmlResponse
+
+<span class="token keyword">class</span> <span class="token class-name">SeleniumDownloadMiddleware</span><span class="token punctuation">(</span>object<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>driver <span class="token operator">=</span> webdriver<span class="token punctuation">.</span>Chrome<span class="token punctuation">(</span>executable_path<span class="token operator">=</span><span class="token string">"chrome_driver_path"</span><span class="token punctuation">)</span>          <span class="token comment" spellcheck="true">#初始化driver</span>
+
+    <span class="token keyword">def</span> <span class="token function">process_request</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> request<span class="token punctuation">,</span> spider<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">if</span> request<span class="token punctuation">.</span>meta<span class="token punctuation">[</span><span class="token string">'Function'</span><span class="token punctuation">]</span> <span class="token operator">==</span> <span class="token string">"Ajax"</span><span class="token punctuation">:</span>
+            <span class="token keyword">return</span> None
+        self<span class="token punctuation">.</span>driver<span class="token punctuation">.</span>get<span class="token punctuation">(</span>request<span class="token punctuation">.</span>url<span class="token punctuation">)</span>   <span class="token comment" spellcheck="true">#打开网页</span>
+        source <span class="token operator">=</span> self<span class="token punctuation">.</span>driver<span class="token punctuation">.</span>page_source  <span class="token comment" spellcheck="true">#获取网页源码</span>
+        response <span class="token operator">=</span> HtmlResponse<span class="token punctuation">(</span>url<span class="token operator">=</span>self<span class="token punctuation">.</span>driver<span class="token punctuation">.</span>current_url<span class="token punctuation">,</span> body<span class="token operator">=</span>source<span class="token punctuation">,</span> request<span class="token operator">=</span>request<span class="token punctuation">,</span> encoding<span class="token operator">=</span><span class="token string">'utf-8'</span><span class="token punctuation">)</span>
+        <span class="token keyword">return</span> response  <span class="token comment" spellcheck="true">#返回response,这样就会跳过DOWNLOAD模块</span>
+</code></pre>
+<p>这里要注意的是,由于之前在Spider中我们有先向网页发送请求获取文章id组成Ajax请求的url, 这个Request是不能截断的, 所以之前在那个请求中添加的meta就在这里起作用. 当这里返回None时,Scrapy就会跳过这个process_request()方法继续向DOWMLOAD模块请求数据.</p>
+<h4 id="数据存储到MongoDB"><a href="#数据存储到MongoDB" class="headerlink" title="数据存储到MongoDB"></a>数据存储到MongoDB</h4><p>使用Scrapy时, 需要在<code>pipeline.py</code>中处理数据的存储, 这里选取<code>MongoDB</code>作为存储的数据库.推荐使用 <code>from_crawler()</code>类方法完成MongoDB配置参数的传递.</p>
+<pre class=" language-python"><code class="language-python"><span class="token keyword">import</span> pymongo
+
+<span class="token keyword">class</span> <span class="token class-name">JianshuWebMongodbPipeline</span><span class="token punctuation">(</span>object<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span>mongo_host<span class="token punctuation">,</span>mongo_port<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>mongo_host <span class="token operator">=</span> mongo_host
+        self<span class="token punctuation">.</span>mongo_port <span class="token operator">=</span> mongo_port
+
+    @classmethod
+    <span class="token keyword">def</span> <span class="token function">from_crawler</span><span class="token punctuation">(</span>cls<span class="token punctuation">,</span> crawler<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> cls<span class="token punctuation">(</span>
+            mongo_host<span class="token operator">=</span>crawler<span class="token punctuation">.</span>settings<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">'MMongodb_Host'</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+            mongo_port<span class="token operator">=</span>crawler<span class="token punctuation">.</span>settings<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">'Mongodb_Port'</span><span class="token punctuation">,</span> <span class="token string">'27017'</span><span class="token punctuation">)</span>
+        <span class="token punctuation">)</span>
+    <span class="token comment" spellcheck="true">#...</span>
+</code></pre>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>这次实战主要是对简书网的文章异步加载请求进行分析, 从而不断地获取隐藏的文章,真正意义上完成整站爬虫. 诚然用这样的方法会很麻烦, 其实使用Scrapy的CrawlSpider方法会很轻松地爬取整站文章, 只需要通过正则表达式制定url的规则即可爬取整站的文章,并且可以很轻松地避免Ajax的请求分析. </p>
+<p> 当然,还有一些非常实用的Scrapy内置功能没有在这里体现,后续的实战项目会一一地将其部署.</p>
+
+            </div>
+            <hr>
+
+            
+
+            <link rel="stylesheet" type="text/css" href="/libs/share/css/share.min.css">
+
+<div id="article-share">
+    
+    <div class="social-share" data-disabled="qzone" data-wechat-qrcode-helper="<p>微信里点“发现”->“扫一扫”二维码便可查看分享。</p>"></div>
+    
+</div>
+
+<script src="/libs/share/js/social-share.min.js"></script>
+
+            <div class="reprint">
+                <p>
+                    <span class="reprint-tip">
+                        <i class="fa fa-exclamation-circle"></i>&nbsp;&nbsp;转载请注明:
+                    </span>
+                    <a href="https://godoforder.github.io" class="b-link-green">青丘之貉</a>
+                    <i class="fa fa-angle-right fa-lg fa-fw text-color"></i>
+                    <a href="/2019/02/19/Scrapy-Selenium爬取简书网/" class="b-link-green">Scrapy+Selenium爬取简书网</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    
+        <link rel="stylesheet" href="/libs/gitalk/gitalk.css">
+<link rel="stylesheet" href="/css/my-gitalk.css">
+
+<div class="card gitalk-card" data-aos="fade-up">
+    <div id="gitalk-container" class="card-content"></div>
+</div>
+
+<script src="/libs/gitalk/gitalk.min.js"></script>
+<script>
+    let gitalk = new Gitalk({
+        clientID: '',
+        clientSecret: '',
+        repo: '',
+        owner: '',
+        admin: null,
+        id: '2019-02-19T12-24-18',
+        distractionFreeMode: false  // Facebook-like distraction free mode
+    });
+
+    gitalk.render('gitalk-container');
+</script>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+<article id="prenext-posts" class="prev-next articles">
+    <div class="row article-row">
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge left-badge text-color">
+                <i class="fa fa-dot-circle-o"></i>&nbsp;本篇
+            </div>
+            <div class="card">
+                <a href="/2019/02/19/Scrapy-Selenium爬取简书网/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/0.jpg" class="responsive-img" alt="Scrapy+Selenium爬取简书网">
+                        
+                        <span class="card-title">Scrapy+Selenium爬取简书网</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary">
+为什么要选取简书网, 因为在爬取该网站数据的时候我发现有些数据是异步加载的, 而且不仅仅是文章的推送, 在文章内部的阅读量、评论数等信息也不是同步加载的,这就类似于很多网页使用的Ajax技术. 鉴于有比较多的数据为异步加载, 所以这里使用</div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="fa fa-clock-o fa-fw icon-date"></i>2019-02-19
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fa fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/实战/" class="post-category" target="_blank">
+                                    实战
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/Scrapy框架/" target="_blank">
+                        <span class="chip bg-color">Scrapy框架</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <div class="article col s12 m6" data-aos="fade-up">
+            <div class="article-badge right-badge text-color">
+                下一篇&nbsp;<i class="fa fa-chevron-right"></i>
+            </div>
+            <div class="card">
+                <a href="/2019/02/13/Scrapy的另一种启动方式-启动过程探究/">
+                    <div class="card-image">
+                        
+                        
+                        <img src="/medias/featureimages/9.jpg" class="responsive-img" alt="Scrapy的另一种启动方式&启动过程探究">
+                        
+                        <span class="card-title">Scrapy的另一种启动方式&启动过程探究</span>
+                    </div>
+                </a>
+                <div class="card-content article-content">
+                    <div class="summary">Twisted异步
+
+由Scrapy的启动方式到Twisted的reactor对象的深入了解
+
+Crawler API在我之前的所有使用scrapy框架构建的爬虫中, 都是使用如下方式启动的:
+
+from scrapy import cmd</div>
+                    <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="fa fa-clock-o fa-fw icon-date"></i>2019-02-13
+                            </span>
+                        <span class="publish-author">
+                            
+                            <i class="fa fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/Twisted/" class="post-category" target="_blank">
+                                    Twisted
+                                </a>
+                            
+                            
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-action article-tags">
+                    
+                    <a href="/tags/Scrapy框架/" target="_blank">
+                        <span class="chip bg-color">Scrapy框架</span>
+                    </a>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</article>
+</div>
+
+
+    </div>
+    <div class="col l3 hide-on-med-and-down">
+        <div class="toc-widget">
+            <div class="toc-title"><i class="fa fa-list-alt"></i>&nbsp;&nbsp;目录</div>
+            <div id="toc-content"></div>
+        </div>
+    </div>
+</div>
+
+<script src="/libs/tocbot/tocbot.min.js"></script>
+<script>
+    $(function () {
+        tocbot.init({
+            tocSelector: '#toc-content',
+            contentSelector: '#articleContent',
+            headingSelector: 'h2, h3, h4'
+        });
+
+        // modify the toc link href to support Chinese.
+        let i = 0;
+        let tocHeading = 'toc-heading-';
+        $('#toc-content a').each(function () {
+            $(this).attr('href', '#' + tocHeading + (++i));
+        });
+
+        // modify the heading title id to support Chinese.
+        i = 0;
+        $('#articleContent').children('h2, h3, h4').each(function () {
+            $(this).attr('id', tocHeading + (++i));
+        });
+
+        // Set scroll toc fixed.
+        let tocHeight = parseInt($(window).height() * 0.4 - 64);
+        let $tocWidget = $('.toc-widget');
+        $(window).scroll(function () {
+            let scroll = $(window).scrollTop();
+            /* add post toc fixed. */
+            if (scroll > tocHeight) {
+                $tocWidget.addClass('toc-fixed');
+            } else {
+                $tocWidget.removeClass('toc-fixed');
+            }
+        });
+    });
+</script>
+    
+
+</main>
+
+
+<footer class="page-footer bg-color">
+    <div class="container row center-align">
+        <div class="col s12 m8 l8 copy-right">
+            本站由&copy;<a href="https://blinkfox.github.io/" target="_blank">Blinkfox</a>基于
+            <a href="https://hexo.io/" target="_blank">Hexo</a> 的
+            <a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">hexo-theme-matery</a>主题搭建.
+
+            
+                &nbsp;<i class="fa fa-area-chart"></i>&nbsp;站点总字数:&nbsp;
+                <span class="white-color">4.5k</span>
+            
+
+            
+			
+                <br>
+                
+                <span id="busuanzi_container_site_pv">
+                    <i class="fa fa-heart-o"></i>
+                    本站总访问量 <span id="busuanzi_value_site_pv" class="white-color"></span>
+                </span>
+                
+                
+                <span id="busuanzi_container_site_uv">
+                    <i class="fa fa-users"></i>
+                    次,&nbsp;访客数 <span id="busuanzi_value_site_uv" class="white-color"></span> 人.
+                </span>
+                
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+
+
+    <a href="mailto:yws13574554@163.com" class="tooltipped" target="_blank" data-tooltip="邮件联系我" data-position="top" data-delay="50">
+        <i class="fa fa-envelope-open"></i>
+    </a>
+
+
+
+    <a href="tencent://AddContact/?fromId=50&fromSubId=1&subcmd=all&uin=251550241" class="tooltipped" data-tooltip="QQ联系我: 251550241" data-position="top" data-delay="50">
+        <i class="fa fa-qq"></i>
+    </a>
+
+
+</div>
+    </div>
+</footer>
+
+<div class="progress-bar"></div>
+
+
+<!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fa fa-search"></i>&nbsp;&nbsp;搜索</span>
+            <input type="search" id="searchInput" name="s" placeholder="请输入搜索的关键字" class="search-input" autofocus>
+        </div>
+        <div id="searchResult"></div>
+    </div>
+</div>
+
+<script src="/js/search.js"></script>
+<script type="text/javascript">
+    searchFunc("/" + "search.xml", 'searchInput', 'searchResult');
+</script>
+<!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fa fa-angle-up"></i>
+    </a>
+</div>
+
+
+<script src="/libs/materialize/js/materialize.min.js"></script>
+<script src="/libs/masonry/masonry.pkgd.min.js"></script>
+<script src="/libs/aos/aos.js"></script>
+<script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+<script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+<script src="/js/matery.js"></script>
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+
+
+
+    <script src="/libs/others/clicklove.js"></script>
+
+
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+
+
+</body>
+</html>
