@@ -616,7 +616,7 @@ id=37242620 title=有趣的男女不同
         <span class="token punctuation">)</span>
     <span class="token comment" spellcheck="true">#...</span>
 </code></pre>
-<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>这次实战主要是对简书网的文章异步加载请求进行分析, 从而不断地获取隐藏的文章,真正意义上完成整站爬虫. 诚然用这样的方法会很麻烦, 其实使用Scrapy的CrawlSpider方法会很轻松地爬取整站文章, 只需要通过正则表达式制定url的规则即可爬取整站的文章,并且可以很轻松地避免Ajax的请求分析. </p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>这次实战主要是对简书网的文章异步加载请求进行分析, 从而不断地获取隐藏的文章,真正意义上完成整站爬虫. 诚然用这样的方法会很麻烦, 其实使用Scrapy的CrawlSpider方法会很轻松地爬取整站文章, 只需要通过正则表达式制定url的规则即可爬取整站的文章,并且可以避免Ajax的请求分析. </p>
 <p> 当然,还有一些非常实用的Scrapy内置功能没有在这里体现,后续的实战项目会一一地将其部署.</p>
 
             </div>
@@ -686,25 +686,24 @@ id=37242620 title=有趣的男女不同
         
         <div class="article col s12 m6" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fa fa-dot-circle-o"></i>&nbsp;本篇
-            </div>
+                <i class="fa fa-chevron-left"></i>&nbsp;上一篇</div>
             <div class="card">
-                <a href="/2019/02/19/Scrapy-Selenium爬取简书网/">
+                <a href="/2019/02/21/破解滑动块验证码/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/0.jpg" class="responsive-img" alt="Scrapy+Selenium爬取简书网">
+                        <img src="/medias/featureimages/21.jpg" class="responsive-img" alt="破解滑动块验证码">
                         
-                        <span class="card-title">Scrapy+Selenium爬取简书网</span>
+                        <span class="card-title">破解滑动块验证码</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
                     <div class="summary">
-为什么要选取简书网, 因为在爬取该网站数据的时候我发现有些数据是异步加载的, 而且不仅仅是文章的推送, 在文章内部的阅读量、评论数等信息也不是同步加载的,这就类似于很多网页使用的Ajax技术. 鉴于有比较多的数据为异步加载, 所以这里使用</div>
+上篇文章有讲到使用selenium爬取Ajax数据, 其实selenium的功能不仅仅有这些, 注意到其API中有一个action_chains, 能够控制鼠标完成一系列操作. 于是想到了最近有遇到过的滑动模块的验证码, 如果能够操作鼠标</div>
                     <div class="publish-info">
-                            <span class="publish-date">
-                                <i class="fa fa-clock-o fa-fw icon-date"></i>2019-02-19
-                            </span>
+                        <span class="publish-date">
+                            <i class="fa fa-clock-o fa-fw icon-date"></i>2019-02-21
+                        </span>
                         <span class="publish-author">
                             
                             <i class="fa fa-bookmark fa-fw icon-category"></i>
@@ -717,12 +716,11 @@ id=37242620 title=有趣的男女不同
                         </span>
                     </div>
                 </div>
-
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/Scrapy框架/" target="_blank">
-                        <span class="chip bg-color">Scrapy框架</span>
+                    <a href="/tags/Selenium/" target="_blank">
+                        <span class="chip bg-color">Selenium</span>
                     </a>
                     
                 </div>
@@ -845,7 +843,7 @@ from scrapy import cmd</div>
 
             
                 &nbsp;<i class="fa fa-area-chart"></i>&nbsp;站点总字数:&nbsp;
-                <span class="white-color">4.5k</span>
+                <span class="white-color">5.9k</span>
             
 
             
